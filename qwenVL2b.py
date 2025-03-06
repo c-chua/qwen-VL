@@ -72,8 +72,6 @@ messages = [
     {
         "role": "user",
         "content": [
-            # {"type": "image", "image": "./3373_22front.png"},
-            # {"type": "image", "image": "./3373_22back.png"},
             {"type": "image", "image": "./rgb_front/0025.png"},
             {"type": "image", "image": "./rgb_back/0025.png"},
             {"type": "text", "text": "The first image comes from a self-driving car\’s front view camera. The second image is from the car\’s back camera, showing the view behind the vehicle, with vehicles that are following the self-driving car. The view captured by the back camera is a direct representation of the rear surroundings, with the self-driving car in the center of the scene.\
