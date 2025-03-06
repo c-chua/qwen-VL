@@ -5,7 +5,8 @@ This repository contains a Python script to run Qwen and generate output based o
 ## Usage
 
 1. Ensure you have all the necessary dependencies installed.
-2. Run the script to process the images.
+   `pip install -r requirements.txt`
+3. Run the script to process the images.
 
 ## Input
 
