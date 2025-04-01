@@ -53,15 +53,6 @@ You will be provided with two images:
     1. Front View Camera: Showing the front view of the self-driving car.
     2. Back-View Camera: Showing the rear view of the self-driving car.
 
-Tasks:
-    1. Object Detection: Identify and label safety-critical objects (e.g., pedestrians, vehicles, traffic signs, lanes, obstacles) in both images.
-    - Pay special attention to **emergency vehicles** (e.g., ambulances, fire trucks, police cars). These vehicles are high-priority objects. These vehicles are usually indicated by flashing lights on the vehicle.
-    2. Driving Action Recommendation: Based on the detected objects and their positions, output the recommended driving action (e.g., 'stop', 'change lane', 'proceed cautiously', 'yield').
-
-Respond with concise and clear answers:
-    Object detection results should be short phrases (e.g., 'red traffic light', '2 pedestrians on the right', 'blue car approaching from behind').
-    Driving actions should be a single phrase summarizing the appropriate maneuver.
-
 Focus on accuracy, clarity, and safety-critical information. Avoid unnecessary explanations."""
 
 messages = [
@@ -72,11 +63,21 @@ messages = [
     {
         "role": "user",
         "content": [
-            {"type": "image", "image": "./rgb_front/0025.png"},
-            {"type": "image", "image": "./rgb_back/0025.png"},
-            {"type": "text", "text": "The first image comes from a self-driving car\’s front view camera. The second image is from the car\’s back camera, showing the view behind the vehicle, with vehicles that are following the self-driving car. The view captured by the back camera is a direct representation of the rear surroundings, with the self-driving car in the center of the scene.\
-             Question 1: Can you describe the key elements in the front and back views, such as road conditions, objects, vehicles, and potential hazards? Please differentiate between the two views in your description.\
-             Question 2: Based on your description, what actions should the self-driving car take to ensure safety? Consider the current lane position, road conditions, and potential hazards in your response. Should the car change lanes, adjust speed, or take any other specific actions to prioritize safety?"},
+            {"type": "image", "image": "./VAD_model/3380/rgb_front/0020.png"},
+            {"type": "image", "image": "./VAD_model/3380/rgb_back/0020.png"},
+            {"type": "text", "text": "The first image comes from a self-driving car\’s front view camera. The second image is from the car\’s back camera, \
+             showing the view behind the vehicle, with vehicles that are following the self-driving car. \
+             The view captured by the back camera is a direct representation of the rear surroundings, with the self-driving car in the center of the scene.\
+             Question 1: Can you describe the key elements in the front and back views, such as road conditions, objects, vehicles, and potential hazards?\
+             Please differentiate between the two views in your description.\
+             Question 2: Based on question 1, summarise the situation in a short phrase only.\
+             Question 3: Based on your description, what actions should the self-driving car take to ensure safety? \
+             Consider the current lane position, road conditions, and potential hazards in your response. \
+             Should the car change lanes, adjust speed, or take any other specific actions to prioritize safety?\
+             Please summarise your answer for question 3 in one sentence. \
+             \n \
+             Question 4: The current position of the self-driving car is (0.0, 0.0). The next 4 waypoints of the self-driving car\'s path are: (0.0, 3.4), (0.0, 7.2), (-0.1, 11.0), (-0.1, 15.0). \
+             What is the path taken by the self-driving car? Is this path taken by the self-driving car align with your suggested action in Question 3?"},
         ],
     }
 ]
@@ -108,4 +109,5 @@ output_text = processor.batch_decode(
 print(output_text[0])
 
 # Clear cuda memory
+print("\nClearing gpu cache now...")
 clear_memory()
