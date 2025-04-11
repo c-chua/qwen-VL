@@ -31,5 +31,11 @@ def clear_memory():
     print(f"GPU allocated memory: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
     print(f"GPU reserved memory: {torch.cuda.memory_reserved() / 1024**3:.2f} GB")
 
+def clear_cache():
+    torch.cuda.empty_cache()
+    print(f"GPU allocated memory: {torch.cuda.memory_allocated() / 1024**3:.2f} GB")
+    print(f"GPU reserved memory: {torch.cuda.memory_reserved() / 1024**3:.2f} GB")
+    # torch.cuda.empty_cache()
 
-clear_memory()
+# clear_memory()
+clear_cache()

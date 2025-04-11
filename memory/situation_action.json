@@ -1538,7 +1538,7 @@
       0.0076927863992750645,
       0.012149718590080738
     ],
-    "action": "Change lane right",
+    "action": "Change lane left",
     "siutation": "The front view shows a clear road with no immediate hazards, while the back view reveals a complex scene with emergency vehicles, indicating a potential emergency situation."
   }
 }

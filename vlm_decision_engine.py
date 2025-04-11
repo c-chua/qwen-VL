@@ -118,7 +118,7 @@ class VLMDecisionEngine:
             return RoadOption.LANEFOLLOW
         return RoadOption.LANEFOLLOW
     
-    def run_inference_from_pil(self, front_img, back_img):
+    def run_inference_from_pil(self, front_img, back_img, waypoints):
         image_inputs = [
             front_img.resize((336, 336)),
             back_img.resize((336, 336))
@@ -175,11 +175,11 @@ class VLMDecisionEngine:
         messages.append({"role": "assistant", "content": [{"type": "text", "text": q2_output}]})
         messages.append({
             "role": "user",
-            "content": [{"type": "text", "text": "Based on your description, what actions should the self-driving car take to ensure safety?\n \
+            "content": [{"type": "text", "text": f"Based on your description, what actions should the self-driving car take to ensure safety?\n \
                     Consider the current lane position, road conditions, and potential hazards in your response.\n \
                     Should the car change lanes, adjust speed, or take any other specific actions to prioritize safety?\n \
                     Please summarise your answer for question 3 in one sentence. \
-                        Furthermore, The current position of the self-driving car is (0.0, 0.0). The next 4 waypoints of the self-driving car\'s path are: (0.0, 3.4), (0.0, 7.2), (-0.1, 11.0), (-0.1, 15.0). \
+                        Furthermore, The current position of the self-driving car is (0.0, 0.0). The next 4 waypoints of the self-driving car\'s path are: {waypoints}. \
                     What is the path taken by the self-driving car? Is this path taken by the self-driving car align with your suggested action?"}]
         })
         text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
@@ -191,7 +191,7 @@ class VLMDecisionEngine:
 
         if "not aligned" in q3_output.lower():
             results = self.retriever.query(q2_embedding)
-            if results and results[0]['similarity'] >= 0.5:
+            if results and results[0]['similarity'] >= 0.85:
                 action = results[0]["action"]
                 override_command = self.map_vlm_action_to_road_option(action)
                 print(f"[VLM] Overriding command to: {override_command} (Action: {action})")
@@ -200,5 +200,5 @@ class VLMDecisionEngine:
                 print("[VLM] No good match found in memory.")
         else:
             print("[VLM] Situation aligned. No override needed.")
-
+        torch.cuda.empty_cache()
         return None

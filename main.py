@@ -6,6 +6,7 @@ import torch
 import gc
 import time
 
+start_time = time.time()
 # Initialize model and processor
 model = Qwen2VLForConditionalGeneration.from_pretrained(
     "Qwen/Qwen2-VL-2B-Instruct",
@@ -27,6 +28,12 @@ You will be provided with two images:
 
 Focus on accuracy, clarity, and safety-critical information. Avoid unnecessary explanations."""
 
+question_1_text = "The first image comes from a self-driving car\’s front view camera. The second image is from the car\’s back camera, \
+             showing the view behind the vehicle, with vehicles that are following the self-driving car. \
+             The view captured by the back camera is a direct representation of the rear surroundings, with the self-driving car in the center of the scene.\
+             Question 1: Can you describe the key elements in the front and back views, such as road conditions, objects, vehicles, and potential hazards?\
+             Please differentiate between the two views in your description. Keep your answer short."
+
 # Initial message + question 1
 messages = [
     {"role": "system", "content": [{"type": "text", "text": system_message}]},
@@ -35,11 +42,7 @@ messages = [
         "content": [
             {"type": "image", "image": "./VAD_model/3378/rgb_front/0013.png"}, # 11 12 13!
             {"type": "image", "image": "./VAD_model/3378/rgb_back/0013.png"},
-            {"type": "text", "text": "The first image comes from a self-driving car\’s front view camera. The second image is from the car\’s back camera, \
-             showing the view behind the vehicle, with vehicles that are following the self-driving car. \
-             The view captured by the back camera is a direct representation of the rear surroundings, with the self-driving car in the center of the scene.\
-             Question 1: Can you describe the key elements in the front and back views, such as road conditions, objects, vehicles, and potential hazards?\
-             Please differentiate between the two views in your description. Keep your answer short."}
+            {"type": "text", "text": question_1_text}
         ],
     }
 ]
@@ -54,11 +57,13 @@ generated_ids = vlm.generate(inputs)
 output_q1 = processor.batch_decode(generated_ids[:, inputs.input_ids.shape[-1]:], skip_special_tokens=True)[0]
 print("Answer Q1:", output_q1)
 
+question_2_text = "Question 2: Based on question 1, summarise the situation in a short phrase only."
+
 # Question 2
-messages.append({"role": "assistant", "content": [{"type": "text", "text": output_q1}]})
+messages.append({"role": "assistant", "content": [{"type": "text", "text": question_1_text + "\n" + output_q1}]})
 messages.append({
     "role": "user",
-    "content": [{"type": "text", "text": "Question 2: Based on question 1, summarise the situation in a short phrase only."}]
+    "content": [{"type": "text", "text": question_2_text}]
 })
 text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 inputs = processor(text=[text], return_tensors="pt").to("cuda")
@@ -74,7 +79,7 @@ qwen_embedding = vlm.get_generation_embedding(inputs, generated_ids)
 messages.append({"role": "assistant", "content": [{"type": "text", "text": output_q2}]})
 messages.append({
     "role": "user",
-    "content": [{"type": "text", "text": "Based on your description, what actions should the self-driving car take to ensure safety?\n \
+    "content": [{"type": "text", "text": "Question 3: Based on your description, what actions should the self-driving car take to ensure safety?\n \
              Consider the current lane position, road conditions, and potential hazards in your response.\n \
              Should the car change lanes, adjust speed, or take any other specific actions to prioritize safety?\n \
              Please summarise your answer for question 3 in one sentence. \
@@ -93,7 +98,8 @@ print("Answer Q3:", output_q3)
 if 'not aligned' in output_q3.lower():
     # check "memory module" in json file to determine if sim score >= 0.5 then extract action
     results = retriever.query(qwen_embedding)
-    if results[0]['similarity'] < 0.5:
+    print(results[0]['similarity'])
+    if results[0]['similarity'] < 0.8:
         print("No good match found.")
         # add current situation and action to json file to update memory
         retriever.save_new_situation(
@@ -107,4 +113,8 @@ if 'not aligned' in output_q3.lower():
 else:
     # do nothing
     print('Nothing to be done, action is aligned.')
+end_time = time.time()
+elapsed_time = end_time - start_time
+print(elapsed_time)
+torch.cuda.empty_cache()
 
